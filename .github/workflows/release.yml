@@ -1,0 +1,113 @@
+# Builds the WeekFlow desktop app and publishes it as a GitHub release.
+# Release a version: set "version" in desktop/package.json, commit, then
+#   git tag vX.Y.Z && git push origin vX.Y.Z
+# Or run it from the Actions tab ("Run workflow").
+name: Release desktop app
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release, e.g. v1.1.0 (must match desktop/package.json)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag matches desktop/package.json version
+        run: |
+          version=$(node -p "require('./desktop/package.json').version")
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG does not match desktop/package.json version $version."
+            exit 1
+          fi
+
+  windows:
+    needs: check
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npx electron-builder --win --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          if-no-files-found: error
+          path: |
+            desktop/dist/WeekFlow-Setup.exe
+            desktop/dist/WeekFlow-Setup.exe.blockmap
+            desktop/dist/latest.yml
+
+  linux:
+    needs: check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npx electron-builder --linux --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          if-no-files-found: error
+          path: |
+            desktop/dist/WeekFlow-x86_64.AppImage
+            desktop/dist/weekflow_amd64.deb
+            desktop/dist/latest-linux.yml
+
+  release:
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          notes=".github/release-notes/$TAG.md"
+          title="WeekFlow ${TAG#v}"; title="${title%.0}"
+          files=(dist/WeekFlow-Setup.exe dist/WeekFlow-Setup.exe.blockmap dist/latest.yml dist/WeekFlow-x86_64.AppImage dist/weekflow_amd64.deb dist/latest-linux.yml)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --draft=false --prerelease=false --latest
+            gh release upload "$TAG" "${files[@]}" --clobber
+          elif [ -f "$notes" ]; then
+            gh release create "$TAG" "${files[@]}" --title "$title" --notes-file "$notes" --latest
+          else
+            gh release create "$TAG" "${files[@]}" --title "$title" --generate-notes --latest
+          fi
+      - name: Check the download links work
+        run: |
+          sleep 10
+          for f in WeekFlow-Setup.exe WeekFlow-x86_64.AppImage weekflow_amd64.deb latest.yml latest-linux.yml; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" -L "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/$f")
+            echo "$f -> HTTP $code"; [ "$code" = "200" ] || exit 1
+          done
