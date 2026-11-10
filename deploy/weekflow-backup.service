@@ -1,0 +1,12 @@
+[Unit]
+Description=Back up the WeekFlow database
+
+[Service]
+Type=oneshot
+User=weekflow
+Group=weekflow
+WorkingDirectory=/opt/weekflow
+EnvironmentFile=-/etc/weekflow.env
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning /opt/weekflow/server/admin.js backup
+# Keep the 14 newest backups
+ExecStartPost=/bin/sh -c 'ls -1t /var/lib/weekflow/backups/weekflow-*.db 2>/dev/null | tail -n +15 | xargs -r rm -f'

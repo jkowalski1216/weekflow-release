@@ -1,0 +1,18 @@
+# Run with:  docker compose up -d
+# Then open: http://<this-vm's-ip>:8080
+services:
+  weekflow:
+    build: .
+    image: weekflow-web:latest
+    container_name: weekflow
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - weekflow-data:/app/data
+
+volumes:
+  weekflow-data:

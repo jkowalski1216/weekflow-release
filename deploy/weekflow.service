@@ -1,0 +1,28 @@
+[Unit]
+Description=WeekFlow web app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=weekflow
+Group=weekflow
+WorkingDirectory=/opt/weekflow
+EnvironmentFile=-/etc/weekflow.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning /opt/weekflow/server/server.js
+Restart=on-failure
+RestartSec=3
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/weekflow
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

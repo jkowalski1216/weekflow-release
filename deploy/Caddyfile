@@ -1,0 +1,13 @@
+# Optional HTTPS in front of WeekFlow with Caddy (https://caddyserver.com).
+# 1. Point a DNS name at this VM (for example weekflow.example.com).
+# 2. Replace the name below, then:  sudo cp deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# 3. In /etc/weekflow.env set TRUST_PROXY=1 and HOST=127.0.0.1, then: sudo systemctl restart weekflow
+#
+# For a lab-only name with no public DNS, use "tls internal" to get a certificate
+# from Caddy's own authority (browsers will ask you to trust it once).
+
+weekflow.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8080
+	# tls internal
+}

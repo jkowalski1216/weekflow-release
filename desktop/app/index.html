@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WeekFlow</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Main navigation">
+    <div class="logo">
+      <img src="logo-64.png" alt="" width="34" height="34">
+      <span>Week<b>flow</b></span>
+    </div>
+    <nav id="nav">
+      <button class="navbtn" data-view="dashboard"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z"/></svg><span>Dashboard</span></button>
+      <button class="navbtn" data-view="week"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>My Week</span></button>
+      <button class="navbtn" data-view="tasks"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span>All Tasks</span></button>
+      <button class="navbtn" data-view="inbox"><svg viewBox="0 0 24 24"><path d="M3.5 13l2.6-7.2A2 2 0 0 1 8 4.5h8a2 2 0 0 1 1.9 1.3l2.6 7.2V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/><path d="M3.5 13H8l1.5 2.5h5L16 13h4.5"/></svg><span>Inbox</span><em class="badge" id="inboxBadge" hidden>0</em></button>
+      <button class="navbtn" data-view="completed"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg><span>Completed</span></button>
+      <button class="navbtn" data-view="stats"><svg viewBox="0 0 24 24"><path d="M5 20V11M10 20V5M15 20v-7M20 20V9"/></svg><span>Statistics</span></button>
+      <button class="navbtn" data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
+    </nav>
+    <div class="streakcard" id="streakCard">
+      <div class="streakicon"><svg viewBox="0 0 24 24"><path d="M12 2c1 3.5 5 5.8 5 11a5 5 0 0 1-10 0c0-2.4 1.2-4 2.4-5.2.2 1.7 1 2.8 2.1 3.2C11 8 11.3 5 12 2z"/></svg></div>
+      <div><strong id="streakTitle">Start a streak</strong><small id="streakSub">Finish a task today</small></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="topright">
+        <label class="search" for="searchInput">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+          <input id="searchInput" type="search" placeholder="Search tasks…" autocomplete="off">
+        </label>
+        <div class="bellwrap">
+          <button class="iconbtn" id="bellBtn" aria-label="Reminders" aria-haspopup="true">
+            <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+            <em class="dot" id="bellCount" hidden>0</em>
+          </button>
+          <div class="popover" id="bellPop" hidden></div>
+        </div>
+        <button class="avatar" id="avatarBtn" aria-label="Profile and settings">J</button>
+      </div>
+    </header>
+    <div id="updBar" class="updbar" role="status" hidden></div>
+    <div id="view" class="view"></div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <form class="modal" id="editor" aria-labelledby="edHead">
+    <div class="modalhead"><h2 id="edHead">New task</h2><button type="button" class="iconbtn sm" id="edClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="field"><label for="edTitle">Task</label><input id="edTitle" maxlength="200" required placeholder="What needs doing?"></div>
+    <div class="grid2">
+      <div class="field"><label for="edDate">Day</label><input id="edDate" type="date"></div>
+      <div class="field"><label for="edTime">Reminder time</label><input id="edTime" type="time"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="edPriority">Priority</label>
+        <select id="edPriority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
+      <div class="field"><label for="edCategory">Category</label><select id="edCategory"></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="edStatus">Status</label>
+        <select id="edStatus"><option value="open">To do</option><option value="doing">In progress</option><option value="hold">On hold</option><option value="done">Complete</option></select></div>
+      <div class="field"><label for="edRepeat">Repeat</label>
+        <select id="edRepeat"><option value="none">Does not repeat</option><option value="daily">Every day</option><option value="weekdays">Every weekday (Mon–Fri)</option><option value="weekly">Every week</option><option value="monthly">Every month</option></select></div>
+    </div>
+    <div class="field"><label for="edNotes">Notes</label><textarea id="edNotes" maxlength="4000" placeholder="Links, details, next steps"></textarea></div>
+    <p class="hint" id="edHint">Leave the day empty to keep it in your Inbox. Any day works, including past days.</p>
+    <div class="modalactions">
+      <button type="button" class="btn danger" id="edDelete" hidden>Delete</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn ghost" id="edCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="edSave">Add task</button>
+    </div>
+  </form>
+</div>
+
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
